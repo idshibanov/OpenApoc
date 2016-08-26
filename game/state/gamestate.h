@@ -17,6 +17,7 @@
 #include "game/state/ufopaedia.h"
 #include "library/strings.h"
 #include <random>
+#include <queue>
 
 namespace OpenApoc
 {
@@ -38,8 +39,6 @@ class GameState : public std::enable_shared_from_this<GameState>
 	std::map<UString, sp<DoodadType>> doodad_types;
 	std::map<UString, sp<VEquipmentType>> vehicle_equipment;
 	std::map<UString, sp<BaseLayout>> base_layouts;
-	std::map<UString, sp<UFOGrowth>> ufo_growth_lists;
-	std::map<UString, sp<UFOIncursion>> ufo_incursions;
 	std::map<UString, sp<Base>> player_bases;
 	std::map<UString, sp<City>> cities;
 	std::map<UString, sp<Vehicle>> vehicles;
@@ -47,6 +46,9 @@ class GameState : public std::enable_shared_from_this<GameState>
 	ResearchState research;
 
 	mutable unsigned lastVehicle;
+	std::map<UString, sp<UFOGrowth>> ufo_growth_lists;
+	std::map<UString, sp<UFOIncursion>> ufo_incursions;
+	std::priority_queue<UFOMissionLaunch> ufo_queue;
 
 	std::map<UString, sp<Agent>> agents;
 	AgentGenerator agent_generator;
@@ -113,6 +115,8 @@ class GameState : public std::enable_shared_from_this<GameState>
 
 	void updateEndOfDay();
 	void updateEndOfWeek();
+	void growUFOs();
+	void toggleDimension();
 };
 
 }; // namespace OpenApoc

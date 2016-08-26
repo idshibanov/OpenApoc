@@ -32,4 +32,8 @@ template <> const UString &StateObject<UFOIncursion>::getTypeName()
 	static UString name = "UFOIncursion";
 	return name;
 }
+bool UFOMissionLaunch::operator<(const UFOMissionLaunch & rhs)
+{
+	return this->ticksScheduled < rhs.ticksScheduled;
+}
 }; // namespace OpenApoc

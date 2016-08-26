@@ -204,6 +204,14 @@ void Vehicle::setupMover()
 	}
 }
 
+void Vehicle::removeFromMap()
+{
+	this->shadowObject->removeFromMap();
+	this->tileObject->removeFromMap();
+	this->shadowObject.reset();
+	this->tileObject.reset();
+}
+
 void Vehicle::update(GameState &state, unsigned int ticks)
 
 {
@@ -403,10 +411,7 @@ void Vehicle::handleCollision(GameState &state, Collision &c)
 			auto doodad = city->placeDoodad(StateRef<DoodadType>{&state, "DOODAD_EXPLOSION_2"},
 			                                this->tileObject->getPosition());
 
-			this->shadowObject->removeFromMap();
-			this->tileObject->removeFromMap();
-			this->shadowObject.reset();
-			this->tileObject.reset();
+			this->removeFromMap();
 			state.vehicles.erase(this->getId(state, this->shared_from_this()));
 			return;
 		}

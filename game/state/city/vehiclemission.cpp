@@ -606,10 +606,7 @@ void VehicleMission::update(GameState &state, Vehicle &v, unsigned int ticks)
 				{
 					if (city.second != v.city.getSp())
 					{
-						v.shadowObject->removeFromMap();
-						v.tileObject->removeFromMap();
-						v.shadowObject.reset();
-						v.tileObject.reset();
+						v.removeFromMap();
 						v.city = {&state, city.second};
 						// FIXME: add GotoBase mission
 						return;

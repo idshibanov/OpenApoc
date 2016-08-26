@@ -130,6 +130,7 @@ class Vehicle : public StateObject<Vehicle>, public std::enable_shared_from_this
 
 	void setPosition(const Vec3<float> &pos);
 
+	void removeFromMap();
 	virtual void update(GameState &state, unsigned int ticks);
 };
 

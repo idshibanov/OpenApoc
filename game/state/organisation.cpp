@@ -17,7 +17,7 @@ float Organisation::getRelationTo(const StateRef<Organisation> &other) const
 		// Assume maximum relations
 		return 100.0f;
 	}
-	if (this->name == "Alien" || other->name == "Alien")
+	if (this->isAlien() || other->isAlien())
 	{
 		// Everybody hates Aliens and vice-versa
 		// FIXME: extract initital standings
@@ -35,6 +35,11 @@ float Organisation::getRelationTo(const StateRef<Organisation> &other) const
 		x = it->second;
 	}
 	return x;
+}
+
+bool Organisation::isAlien() const
+{
+	return this->name == "Alien";
 }
 
 Organisation::Relation Organisation::isRelatedTo(const StateRef<Organisation> &other) const

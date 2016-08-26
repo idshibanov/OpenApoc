@@ -30,6 +30,7 @@ class Organisation : public StateObject<Organisation>
 	bool isPositiveTo(const StateRef<Organisation> &other) const;
 	bool isNegativeTo(const StateRef<Organisation> &other) const;
 	float getRelationTo(const StateRef<Organisation> &other) const;
+	bool isAlien() const;
 	std::map<StateRef<Organisation>, float> current_relations;
 };
 
