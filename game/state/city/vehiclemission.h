@@ -37,16 +37,16 @@ class VehicleMission
 	bool advanceAlongPath(Vec3<float> &dest);
 
 	// Methods to create new missions
-	static VehicleMission *gotoLocation(Vehicle &v, Vec3<int> target);
+	static VehicleMission *gotoLocation(Vec3<int> target);
 	static VehicleMission *gotoPortal(Vehicle &v);
-	static VehicleMission *gotoPortal(Vehicle &v, Vec3<int> target);
-	static VehicleMission *gotoBuilding(Vehicle &v, StateRef<Building> target);
-	static VehicleMission *infiltrateBuilding(Vehicle &v, StateRef<Building> target);
-	static VehicleMission *attackVehicle(Vehicle &v, StateRef<Vehicle> target);
-	static VehicleMission *followVehicle(Vehicle &v, StateRef<Vehicle> target);
-	static VehicleMission *snooze(Vehicle &v, unsigned int ticks);
-	static VehicleMission *crashLand(Vehicle &v);
-	static VehicleMission *patrol(Vehicle &v, unsigned int counter = 10);
+	static VehicleMission *gotoPortal(Vec3<int> target);
+	static VehicleMission *gotoBuilding(StateRef<Building> target);
+	static VehicleMission *infiltrateBuilding(StateRef<Building> target);
+	static VehicleMission *attackVehicle(StateRef<Vehicle> target);
+	static VehicleMission *followVehicle(StateRef<Vehicle> target);
+	static VehicleMission *snooze(unsigned int ticks);
+	static VehicleMission *crashLand();
+	static VehicleMission *patrol(unsigned int counter = 10);
 
 	UString getName();
 

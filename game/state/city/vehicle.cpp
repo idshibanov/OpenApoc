@@ -241,7 +241,7 @@ void Vehicle::update(GameState &state, unsigned int ticks)
 		// Make UFOs patrol their city if we're looking at it
 		if (this->city.getSp() == alien_city && state.current_city == this->city)
 		{
-			this->missions.emplace_back(VehicleMission::patrol(*this));
+			this->missions.emplace_back(VehicleMission::patrol());
 		}
 	}
 
@@ -347,7 +347,7 @@ bool Vehicle::applyDamage(GameState &state, int damage, float armour)
 			else if (isCrashed())
 			{
 				this->missions.clear();
-				this->missions.emplace_back(VehicleMission::crashLand(*this));
+				this->missions.emplace_back(VehicleMission::crashLand());
 				this->missions.front()->start(state, *this);
 				return false;
 			}

@@ -284,6 +284,33 @@ void GameState::update(unsigned int ticks)
 	Trace::end("GameState::update::labs");
 
 	gameTime.addTicks(ticks);
+
+	while (!this->ufo_queue.empty() && this->ufo_queue.top().ticksScheduled < gameTime.getTicks())
+	{
+		auto launch = this->ufo_queue.top();
+		StateRef<City> humanCity = { this, "CITYMAP_HUMAN" };
+		for (auto v : this->vehicles)
+		{
+			auto vehicle = v.second;
+			auto typeID = vehicle->type->getId(*this, vehicle->type);
+			if (typeID == launch.type && vehicle->city != humanCity)
+			{
+				vehicle->removeFromMap();
+				vehicle->city = humanCity;
+				vehicle->launch(*humanCity->map, *this, launch.position);
+
+				vehicle->missions.clear();
+				for (auto m : launch.missionList)
+				{
+					vehicle->missions.emplace_back(m);
+				}
+				vehicle->missions.front()->start(*this, *vehicle);
+				break;
+			}
+		}
+		this->ufo_queue.pop();
+	}
+
 	if (gameTime.dayPassed())
 	{
 		this->updateEndOfDay();
@@ -391,37 +418,25 @@ void GameState::updateEndOfDay()
 			StateRef<City> humanCity = { this, "CITYMAP_HUMAN" };
 			std::uniform_int_distribution<int> portal_rng(0, humanCity->portals.size() - 1);
 			std::uniform_int_distribution<int> bld_rng(0, humanCity->buildings.size() - 1);
+			int scheduled = this->gameTime.getTicks();
 
 			for (auto ufo : inc->primaryList)
 			{
-				int ufosToSend = ufo.second;
-				for (auto v : this->vehicles)
-				{
-					if (ufosToSend <= 0)
-						break;
+				scheduled += TICKS_PER_SECOND / 2;
 
-					auto vehicle = v.second;
-					auto typeID = vehicle->type->getId(*this, vehicle->type);
-					if (typeID == ufo.first && vehicle->city != humanCity)
-					{
-						auto portal = humanCity->portals.begin();
-						std::advance(portal, portal_rng(this->rng));
+				auto portal = humanCity->portals.begin();
+				std::advance(portal, portal_rng(this->rng));
 
-						auto bld_iter = humanCity->buildings.begin();
-						std::advance(bld_iter, bld_rng(this->rng));
-						StateRef<Building> bld = { this, (*bld_iter).second };
+				auto bld_iter = humanCity->buildings.begin();
+				std::advance(bld_iter, bld_rng(this->rng));
+				StateRef<Building> bld = { this, (*bld_iter).second };
 
-						vehicle->removeFromMap();
-						vehicle->city = humanCity;
-						vehicle->launch(*humanCity->map, *this, (*portal)->getPosition());
-
-						vehicle->missions.clear();
-						vehicle->missions.emplace_back(VehicleMission::infiltrateBuilding(*vehicle, bld));
-						vehicle->missions.front()->start(*this, *vehicle);
-
-						ufosToSend--;
-					}
-				}
+				UFOMissionLaunch launch;
+				launch.type = ufo.first;
+				launch.position = (*portal)->getPosition();
+				launch.ticksScheduled = scheduled;
+				launch.missionList.emplace_back(VehicleMission::infiltrateBuilding(bld));
+				this->ufo_queue.push(launch);
 			}
 
 			// Incursion launched succesfully, stop execution
@@ -470,8 +485,7 @@ void GameState::growUFOs()
 					v->health = type->health;
 
 					// Vehicle::equipDefaultEquipment uses the state reference from itself, so make
-					// sure the
-					// vehicle table has the entry before calling it
+					// sure vehicle table has the entry before calling it
 					UString vID =
 						UString::format("%s%d", Vehicle::getPrefix().c_str(), lastVehicle++);
 					this->vehicles[vID] = v;
@@ -486,7 +500,7 @@ void GameState::growUFOs()
 						// game is not initialized yet
 						v->position = { xyPos(rng), xyPos(rng), v->altitude };
 					}
-					v->missions.emplace_front(VehicleMission::patrol(*v));
+					v->missions.emplace_front(VehicleMission::patrol());
 				}
 			}
 		}

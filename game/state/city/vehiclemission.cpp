@@ -218,13 +218,8 @@ class FlyingVehicleTileHelper : public CanEnterTileHelper
 	}
 };
 
-VehicleMission *VehicleMission::gotoLocation(Vehicle &v, Vec3<int> target)
+VehicleMission *VehicleMission::gotoLocation(Vec3<int> target)
 {
-	// TODO
-	// Pseudocode:
-	// if (in building)
-	// 	prepend(TakeOff)
-	// routeClosestICanTo(target);
 	auto *mission = new VehicleMission();
 	mission->type = MissionType::GotoLocation;
 	mission->targetLocation = target;
@@ -253,7 +248,7 @@ VehicleMission *VehicleMission::gotoPortal(Vehicle &v)
 	return mission;
 }
 
-VehicleMission *VehicleMission::gotoPortal(Vehicle &v, Vec3<int> target)
+VehicleMission *VehicleMission::gotoPortal(Vec3<int> target)
 {
 	auto *mission = new VehicleMission();
 	mission->type = MissionType::GotoPortal;
@@ -261,29 +256,15 @@ VehicleMission *VehicleMission::gotoPortal(Vehicle &v, Vec3<int> target)
 	return mission;
 }
 
-VehicleMission *VehicleMission::gotoBuilding(Vehicle &v, StateRef<Building> target)
+VehicleMission *VehicleMission::gotoBuilding(StateRef<Building> target)
 {
-	// TODO
-	// Pseudocode:
-	// if (in building)
-	// 	queue(TakeOff)
-	// while (!above pad) {
-	//   foreach(pad at target) {
-	//     routes.append(findRouteTo(above pad))
-	//   }
-	//   if (at least one route ends above pad)
-	//     queue(gotoLocation(lowest cost of routes where end == above a pad))
-	//   else
-	//     queue(gotoLocation(lowest cost of routes + estimated distance to closest pad))
-	//  }
-	//  queue(Land)
 	auto *mission = new VehicleMission();
 	mission->type = MissionType::GotoBuilding;
 	mission->targetBuilding = target;
 	return mission;
 }
 
-VehicleMission *VehicleMission::infiltrateBuilding(Vehicle &v, StateRef<Building> target)
+VehicleMission *VehicleMission::infiltrateBuilding(StateRef<Building> target)
 {
 	auto *mission = new VehicleMission();
 	mission->type = MissionType::Infiltrate;
@@ -291,7 +272,7 @@ VehicleMission *VehicleMission::infiltrateBuilding(Vehicle &v, StateRef<Building
 	return mission;
 }
 
-VehicleMission *VehicleMission::attackVehicle(Vehicle &v, StateRef<Vehicle> target)
+VehicleMission *VehicleMission::attackVehicle(StateRef<Vehicle> target)
 {
 	auto *mission = new VehicleMission();
 	mission->type = MissionType::AttackVehicle;
@@ -299,7 +280,7 @@ VehicleMission *VehicleMission::attackVehicle(Vehicle &v, StateRef<Vehicle> targ
 	return mission;
 }
 
-VehicleMission *VehicleMission::followVehicle(Vehicle &v, StateRef<Vehicle> target)
+VehicleMission *VehicleMission::followVehicle(StateRef<Vehicle> target)
 {
 	auto *mission = new VehicleMission();
 	mission->type = MissionType::FollowVehicle;
@@ -307,7 +288,7 @@ VehicleMission *VehicleMission::followVehicle(Vehicle &v, StateRef<Vehicle> targ
 	return mission;
 }
 
-VehicleMission *VehicleMission::snooze(Vehicle &v, unsigned int snoozeTicks)
+VehicleMission *VehicleMission::snooze(unsigned int snoozeTicks)
 {
 	auto *mission = new VehicleMission();
 	mission->type = MissionType::Snooze;
@@ -315,14 +296,14 @@ VehicleMission *VehicleMission::snooze(Vehicle &v, unsigned int snoozeTicks)
 	return mission;
 }
 
-VehicleMission *VehicleMission::crashLand(Vehicle &v)
+VehicleMission *VehicleMission::crashLand()
 {
 	auto *mission = new VehicleMission();
 	mission->type = MissionType::Crash;
 	return mission;
 }
 
-VehicleMission *VehicleMission::patrol(Vehicle &v, unsigned int counter)
+VehicleMission *VehicleMission::patrol(unsigned int counter)
 {
 	auto *mission = new VehicleMission();
 	mission->type = MissionType::Patrol;
@@ -575,7 +556,7 @@ void VehicleMission::update(GameState &state, Vehicle &v, unsigned int ticks)
 				if (enemy)
 				{
 					StateRef<Vehicle> vehicleRef(&state, enemy->getVehicle());
-					auto attackMission = VehicleMission::attackVehicle(v, vehicleRef);
+					auto attackMission = VehicleMission::attackVehicle(vehicleRef);
 					v.missions.emplace_front(attackMission);
 					attackMission->start(state, v);
 				}
@@ -591,7 +572,7 @@ void VehicleMission::update(GameState &state, Vehicle &v, unsigned int ticks)
 				    v.city->placeDoodad(StateRef<DoodadType>{&state, "DOODAD_INFILTRATION_RAY"},
 				                        v.tileObject->getPosition() - Vec3<float>{0, 0, 0.5f});
 
-				v.missions.emplace_back(VehicleMission::snooze(v, doodad->lifetime * 2));
+				v.missions.emplace_back(VehicleMission::snooze(doodad->lifetime * 2));
 				v.missions.emplace_back(VehicleMission::gotoPortal(v));
 			}
 			return;
@@ -906,7 +887,7 @@ void VehicleMission::start(GameState &state, Vehicle &v)
 
 			LogInfo("Vehicle mission %s: Pathing to pad at {%d,%d,%d}", name.c_str(),
 			        shortestPathPad.x, shortestPathPad.y, shortestPathPad.z);
-			auto *gotoMission = VehicleMission::gotoLocation(v, shortestPathPad);
+			auto *gotoMission = VehicleMission::gotoLocation(shortestPathPad);
 			v.missions.emplace_front(gotoMission);
 			gotoMission->start(state, v);
 			return;

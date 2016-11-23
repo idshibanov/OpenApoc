@@ -4,10 +4,11 @@
 #include "library/vec.h"
 #include <map>
 
-class VehicleMission;
 
 namespace OpenApoc
 {
+
+class VehicleMission;
 
 class UFOIncursion : public StateObject<UFOIncursion>
 {
@@ -31,10 +32,10 @@ class UFOIncursion : public StateObject<UFOIncursion>
 class UFOMissionLaunch {
 public:
 	int ticksScheduled;
-	UString& type;
+	UString type;
 	Vec3<float> position;
-	std::vector<sp<VehicleMission>> missionList;
-	bool operator<(const UFOMissionLaunch& rhs);
+	std::vector<VehicleMission*> missionList;
+	bool operator<(const UFOMissionLaunch& rhs) const;
 };
 
 }; // namespace OpenApoc

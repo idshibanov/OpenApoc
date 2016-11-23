@@ -152,12 +152,12 @@ void City::update(GameState &state, unsigned int ticks)
 				while (count--)
 					bldIt++;
 				StateRef<Building> dest = {&state, bldIt->first};
-				v->missions.emplace_back(VehicleMission::gotoBuilding(*v, dest));
+				v->missions.emplace_back(VehicleMission::gotoBuilding(dest));
 				v->missions.front()->start(state, *v);
 
 				// FIXME: Make snoozetime bounds/distribution readable from serialized GameState
 				std::uniform_int_distribution<unsigned int> snoozeTimeDist(10, 10000);
-				v->missions.emplace_back(VehicleMission::snooze(*v, snoozeTimeDist(state.rng)));
+				v->missions.emplace_back(VehicleMission::snooze(snoozeTimeDist(state.rng)));
 			}
 		}
 	}
