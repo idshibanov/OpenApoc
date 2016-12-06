@@ -151,7 +151,7 @@ void GameTime::addTicks(uint64_t ticks)
 	uint64_t dayTicks = this->ticks % TICKS_PER_DAY;
 	if (dayTicks < ticks)
 	{
-		uint64_t days = this->ticks / TICKS_PER_DAY;
+		uint64_t days = this->ticks / TICKS_PER_DAY + 1; // game starts on Tuesday
 		dayPassedFlag = true;
 		if (days % 7 == 0)
 		{
