@@ -225,6 +225,7 @@ void GameState::startGame()
 			v->equipDefaultEquipment(*this);
 		}
 	}
+	growUFOs();
 
 	gameTime = GameTime::midday();
 }
@@ -348,6 +349,60 @@ void GameState::fillPlayerStartingProperty()
 	}
 }
 
+void GameState::growUFOs()
+{
+	int week = this->gameTime.getWeek();
+	auto growth = this->ufo_growth_lists.find(format("%s%d", UFOGrowth::getPrefix(), week));
+	if (growth == this->ufo_growth_lists.end())
+	{
+		growth = this->ufo_growth_lists.find(format("%s%s", UFOGrowth::getPrefix(), "DEFAULT"));
+	}
+
+	if (growth != this->ufo_growth_lists.end())
+	{
+		StateRef<City> city = {this, "CITYMAP_ALIEN"};
+		StateRef<Organisation> alienOrg = {this, "ORG_ALIEN"};
+		std::uniform_int_distribution<int> xyPos(20, 120);
+
+		for (auto vehicleEntry : growth->second->vehicleTypeList)
+		{
+			auto vehicleType = this->vehicle_types.find(vehicleEntry.first);
+			if (vehicleType != this->vehicle_types.end())
+			{
+				for (int i = 0; i < vehicleEntry.second; i++)
+				{
+					auto &type = (*vehicleType).second;
+
+					auto v = mksp<Vehicle>();
+					v->type = {this, (*vehicleType).first};
+					v->name = format("%s %d", type->name, ++type->numCreated);
+					v->city = city;
+					v->owner = alienOrg;
+					v->health = type->health;
+
+					// Vehicle::equipDefaultEquipment uses the state reference from itself, so make
+					// sure the
+					// vehicle table has the entry before calling it
+					UString vID = Vehicle::generateObjectID(*this);
+					this->vehicles[vID] = v;
+
+					v->equipDefaultEquipment(*this);
+					if (city->map)
+					{
+						v->launch(*city->map, *this, {xyPos(rng), xyPos(rng), v->altitude});
+					}
+					else
+					{
+						// game is not initialized yet
+						v->position = {xyPos(rng), xyPos(rng), v->altitude};
+					}
+					v->missions.emplace_front(VehicleMission::patrol(*this, *v));
+				}
+			}
+		}
+	}
+}
+
 bool GameState::canTurbo() const
 {
 	if (!this->current_city->projectiles.empty())
@@ -445,7 +500,7 @@ void GameState::updateEndOfDay()
 		c.second->dailyLoop(*this);
 	}
 	Trace::end("GameState::updateEndOfDay::cities");
-
+	/*
 	for (int i = 0; i < 5; i++)
 	{
 		StateRef<City> city = {this, "CITYMAP_HUMAN"};
@@ -485,52 +540,13 @@ void GameState::updateEndOfDay()
 			fw().pushEvent(new GameVehicleEvent(GameEventType::UfoSpotted, {this, v}));
 		}
 	}
+	*/
 }
 
 void GameState::updateEndOfWeek()
 {
-	int week = this->gameTime.getWeek();
-	auto growth = this->ufo_growth_lists.find(format("%s%d", UFOGrowth::getPrefix(), week));
-	if (growth == this->ufo_growth_lists.end())
-	{
-		growth = this->ufo_growth_lists.find(format("%s%s", UFOGrowth::getPrefix(), "DEFAULT"));
-	}
-
-	if (growth != this->ufo_growth_lists.end())
-	{
-		StateRef<City> city = {this, "CITYMAP_ALIEN"};
-		StateRef<Organisation> alienOrg = {this, "ORG_ALIEN"};
-		std::uniform_int_distribution<int> xyPos(20, 120);
-
-		for (auto vehicleEntry : growth->second->vehicleTypeList)
-		{
-			auto vehicleType = this->vehicle_types.find(vehicleEntry.first);
-			if (vehicleType != this->vehicle_types.end())
-			{
-				for (int i = 0; i < vehicleEntry.second; i++)
-				{
-					auto &type = (*vehicleType).second;
-
-					auto v = mksp<Vehicle>();
-					v->type = {this, (*vehicleType).first};
-					v->name = format("%s %d", type->name, ++type->numCreated);
-					v->city = city;
-					v->owner = alienOrg;
-					v->health = type->health;
-
-					// Vehicle::equipDefaultEquipment uses the state reference from itself, so make
-					// sure the
-					// vehicle table has the entry before calling it
-					UString vID = Vehicle::generateObjectID(*this);
-					this->vehicles[vID] = v;
-
-					v->equipDefaultEquipment(*this);
-					v->launch(*city->map, *this, {xyPos(rng), xyPos(rng), v->altitude});
-					v->missions.emplace_front(VehicleMission::patrol(*this, *v));
-				}
-			}
-		}
-	}
+	// FIXME: Check if alien factory still there
+	growUFOs();
 }
 
 void GameState::update() { this->update(1); }

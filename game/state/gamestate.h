@@ -149,6 +149,9 @@ class GameState : public std::enable_shared_from_this<GameState>
 	// Fills out initial player property
 	void fillPlayerStartingProperty();
 
+	// Spawns UFOs in Alien city based on current week & growth table
+	void growUFOs();
+
 	// Returns true if we can go at max speed (IE push all update loops to 5 minute intervals -
 	// causes insta-completion of all routes etc.
 	// Cannot be done if:
